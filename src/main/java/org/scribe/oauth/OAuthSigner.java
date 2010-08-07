@@ -26,11 +26,32 @@ class OAuthSigner {
   private final String consumerSecret;
   private final OAuthParameters params;
   private final DefaultEqualizer eq;
-
+ 
   public OAuthSigner(String consumerKey, String consumerSecret, DefaultEqualizer eq){
     this.consumerSecret = consumerSecret;
     this.eq = eq;
     this.params = new OAuthParameters(consumerKey);
+  }
+  
+  public void signForXAuthToken(Request request, String username, String password) {
+	signForXAuthToken(request, username, password, OAuth.XAUTH_MODE_DEFAULT);
+  }
+  
+  public void signForXAuthToken(Request request, String username, String password, String mode) {
+	  if(mode.isEmpty()) {
+		mode = OAuth.XAUTH_MODE_DEFAULT;
+	}
+	
+	params.put(OAuth.XAUTH_USERNAME, username);
+    params.put(OAuth.XAUTH_PASSWORD, password);
+    params.put(OAuth.XAUTH_MODE, "client_auth");
+    request.addBodyParameter(OAuth.XAUTH_USERNAME, username);
+    request.addBodyParameter(OAuth.XAUTH_PASSWORD, password);
+    request.addBodyParameter(OAuth.XAUTH_MODE, mode);
+    String toSign = getStringToSign(request, CallType.XAUTH_TOKEN);
+    String oAuthHeader = getOAuthHeader(request, toSign, OAuth.EMPTY_TOKEN_SECRET, CallType.XAUTH_TOKEN);
+    
+    request.addHeader(OAuth.HEADER, oAuthHeader);
   }
   
   public void signForRequestToken(Request request, String callback){
@@ -67,7 +88,7 @@ class OAuthSigner {
   }
   
   public String getSignature(String toSign, String tokenSecret){
-	  return HMAC.sign(toSign, URL.percentEncode(consumerSecret) + '&' + URL.percentEncode(tokenSecret));
+	  return HMAC.sign(toSign, consumerSecret + "&" + tokenSecret);
   }
   
   public String getStringToSign(Request request, CallType type){

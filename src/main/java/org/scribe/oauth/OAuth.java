@@ -15,13 +15,7 @@ limitations under the License.
 */
 package org.scribe.oauth;
 
-/**
- * This class contains OAuth constants, used project-wide
- * 
- * @author Pablo Fernandez
- *
- */
-public class OAuth {  
+class OAuth {  
   public static final String TIMESTAMP = "oauth_timestamp";
   public static final String SIGN_METHOD = "oauth_signature_method";
   public static final String SIGNATURE = "oauth_signature";
@@ -37,4 +31,8 @@ public class OAuth {
   public static final String VERIFIER = "oauth_verifier";
   public static final String EMPTY_TOKEN_SECRET = "";
   public static final String HEADER = "Authorization";
+  public static final String XAUTH_USERNAME="x_auth_username";
+  public static final String XAUTH_PASSWORD="x_auth_password";
+  public static final String XAUTH_MODE="x_auth_mode";
+  public static final String XAUTH_MODE_DEFAULT = "client_auth";
 }

@@ -117,6 +117,19 @@ public class Scribe {
     return new Request(Verb.valueOf(config.getProperty(Scribe.Properties.ACCESS_TOKEN_VERB)), config.getProperty(Scribe.Properties.ACCESS_TOKEN_URL));
   }
   
+  public Token getXAuthToken(String username, String password) {
+	    Request request = getXATRequest();
+	    OAuthSigner signer = getOAuthSigner();
+	    signer.signForXAuthToken(request, username, password, config.getProperty(Scribe.Properties.XAUTH_MODE));
+	    eq.tuneRequest(request, CallType.XAUTH_TOKEN);
+	    Response response = request.send();
+	    return eq.parseRequestTokens(response.getBody());	  
+  }
+  
+  private Request getXATRequest() {
+	    return new Request(Verb.valueOf(config.getProperty(Scribe.Properties.XAUTH_TOKEN_VERB)), config.getProperty(Scribe.Properties.XAUTH_TOKEN_URL));
+  }
+  
   /**
    * Adds an OAuth header to the {@link Request} 
    * 
@@ -155,6 +168,9 @@ public class Scribe {
     public static final String ACCESS_TOKEN_URL = "access.token.url";
     public static final String ACCESS_TOKEN_VERB = "access.token.verb";
     public static final String CONSUMER_SECRET = "consumer.secret";
-    public static final String CONSUMER_KEY = "consumer.key"; 
+    public static final String CONSUMER_KEY = "consumer.key";
+    public static final String XAUTH_TOKEN_URL = "xauth.token.url";
+    public static final String XAUTH_TOKEN_VERB = "xauth.token.verb";
+    public static final String XAUTH_MODE = "xauth.mode";
   } 
 }
