@@ -38,7 +38,7 @@ class OAuthSigner {
   }
   
   public void signForXAuthToken(Request request, String username, String password, String mode) {
-	  if(mode.isEmpty()) {
+	  if((mode == null) || (mode.isEmpty())) {
 		mode = OAuth.XAUTH_MODE_DEFAULT;
 	}
 	
