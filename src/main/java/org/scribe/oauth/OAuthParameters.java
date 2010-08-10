@@ -15,6 +15,8 @@ limitations under the License.
 */
 package org.scribe.oauth;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.*;
 
 import org.scribe.encoders.*;
@@ -31,7 +33,15 @@ class OAuthParameters {
     params.put(OAuth.TIMESTAMP,   getTimestampInSeconds());
     params.put(OAuth.SIGN_METHOD, "HMAC-SHA1");
     params.put(OAuth.VERSION,     "1.0");
-    params.put(OAuth.NONCE,       MD5.hexHash(getTimestampInSeconds()));
+    try {
+        byte[] nonce = new byte[16];
+        Random rand;
+		rand = SecureRandom.getInstance ("SHA1PRNG");
+	    rand.nextBytes(nonce);    
+	    params.put(OAuth.NONCE, new String(nonce));
+	} catch (NoSuchAlgorithmException e) {
+	    params.put(OAuth.NONCE,       MD5.hexHash(getTimestampInSeconds()));
+	}
     params.put(OAuth.CONSUMER_KEY, consumerKey);
   }
   
