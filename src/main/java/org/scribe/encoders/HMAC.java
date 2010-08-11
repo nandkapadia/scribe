@@ -15,10 +15,8 @@ limitations under the License.
 */
 package org.scribe.encoders;
 
-import javax.crypto.*;
-import javax.crypto.spec.*;
-
-import org.apache.commons.codec.binary.*;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * An utility class for HMAC-SHA1 signature methods.  
@@ -51,6 +49,6 @@ public class HMAC {
     Mac mac = Mac.getInstance(HMAC_SHA1);
     mac.init(key);
     byte[] bytes = mac.doFinal(toSign.getBytes(UTF8));
-    return new String(Base64.encodeBase64(bytes)).replace("\r\n", "");
+    return new String(Base64.encodeBytes(bytes)).replace("\r\n", "");
   }
 }
