@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.scribe.oauth;
 
 import java.security.NoSuchAlgorithmException;
@@ -23,61 +23,71 @@ import org.scribe.encoders.*;
 
 class OAuthParameters {
 
-  Map<String, String> params = new HashMap<String, String>();
-  
-  public OAuthParameters(String consumerKey){
-    initDefaultParams(consumerKey);
-  }
-  
-  private void initDefaultParams(String consumerKey){
-    params.put(OAuth.TIMESTAMP,   getTimestampInSeconds());
-    params.put(OAuth.SIGN_METHOD, "HMAC-SHA1");
-    params.put(OAuth.VERSION,     "1.0");
-    try {
-        byte[] nonce = new byte[16];
-        Random rand;
-		rand = SecureRandom.getInstance ("SHA1PRNG");
-	    rand.nextBytes(nonce);    
-	    params.put(OAuth.NONCE, new String(nonce));
-	} catch (NoSuchAlgorithmException e) {
-	    params.put(OAuth.NONCE,       MD5.hexHash(getTimestampInSeconds()));
-	}
-    params.put(OAuth.CONSUMER_KEY, consumerKey);
-  }
-  
-  String getTimestampInSeconds(){
-    return String.valueOf(System.currentTimeMillis() / 1000);
-  }
-  
-  public String asSortedFormEncodedString(){
-    StringBuffer buffer = new StringBuffer();
-    for(String key : sortedKeys())
-      buffer.append(URL.percentEncode(key)).append('=').append(URL.percentEncode(params.get(key))).append('&');
-    return removeLast(buffer,"&");
-  }
-  
-  private List<String> sortedKeys(){ 
-    LinkedList<String> keys = new LinkedList<String>(params.keySet());
-    Collections.sort(keys);
-    return keys;
-  }
+	Map<String, String> params = new HashMap<String, String>();
 
-  private String removeLast(StringBuffer buffer, String tail){
-    String result = buffer.toString();
-    return result.substring(0,result.length()-tail.length());
-  }
-  
-  public String asOAuthHeader() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("OAuth ");
-    for(String key : sortedKeys()){
-      if(key.startsWith(OAuth.PARAM_PREFIX))
-        buffer.append(key).append('=').append('"').append(URL.percentEncode(params.get(key))).append("\", ");
-    }
-    return removeLast(buffer,", ");
-  }
-  
-  public void put(String key, String value){
-    params.put(key, value);
-  }
+	public OAuthParameters(String consumerKey) {
+		initDefaultParams(consumerKey);
+	}
+
+	private void initDefaultParams(String consumerKey) {
+		params.put(OAuth.TIMESTAMP, getTimestampInSeconds());
+		params.put(OAuth.SIGN_METHOD, "HMAC-SHA1");
+		params.put(OAuth.VERSION, "1.0");
+		params.put(OAuth.NONCE, getNonce());
+		params.put(OAuth.CONSUMER_KEY, consumerKey);
+	}
+
+	String getNonce() {
+		String key = new String();
+
+		try {
+			Random rand = null;
+			byte[] nonce = new byte[16];
+			rand = SecureRandom.getInstance("SHA1PRNG");
+			rand.nextBytes(nonce);
+			key = new String(nonce);
+		} catch (NoSuchAlgorithmException e) {
+			// could not find SHA1 PRNG so ignore
+		}
+
+		long time = System.currentTimeMillis();
+
+		return MD5.hexHash(String.format("%s%x", key, time));
+	}
+
+	String getTimestampInSeconds() {
+		return String.valueOf(System.currentTimeMillis() / 1000);
+	}
+
+	public String asSortedFormEncodedString() {
+		StringBuffer buffer = new StringBuffer();
+		for (String key : sortedKeys())
+			buffer.append(URL.percentEncode(key)).append('=').append(URL.percentEncode(params.get(key))).append('&');
+		return removeLast(buffer, "&");
+	}
+
+	private List<String> sortedKeys() {
+		LinkedList<String> keys = new LinkedList<String>(params.keySet());
+		Collections.sort(keys);
+		return keys;
+	}
+
+	private String removeLast(StringBuffer buffer, String tail) {
+		String result = buffer.toString();
+		return result.substring(0, result.length() - tail.length());
+	}
+
+	public String asOAuthHeader() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("OAuth ");
+		for (String key : sortedKeys()) {
+			if (key.startsWith(OAuth.PARAM_PREFIX))
+				buffer.append(key).append('=').append('"').append(URL.percentEncode(params.get(key))).append("\", ");
+		}
+		return removeLast(buffer, ", ");
+	}
+
+	public void put(String key, String value) {
+		params.put(key, value);
+	}
 }
